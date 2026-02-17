@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | DevLogs</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* Override some styles for login page to use the jb (JetBrains) style defined in style.css */
+        body {
+            background-color: var(--jb-gray-bg);
+            color: var(--jb-black);
+            overflow: hidden;
+        }
+        .login-container h2 {
+            color: var(--jb-black);
+            text-align: center;
+            margin-bottom: 24px;
+        }
+    </style>
+</head>
+<body class="login-body">
+    <header>
+        <nav>
+            <a href="index.html" style="font-size: 1.5rem; margin-right: auto; background: linear-gradient(90deg, var(--gh-blue) 0%, var(--gh-green) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">DevLogs</a>
+            <a href="index.html">Home</a>
+            <a href="login.html">Login</a>
+        </nav>
+    </header>
+
+    <div class="login-container animate-fade-in">
+        <div class="login-header">
+            <h1>Welcome Back</h1>
+            <p>Please sign in to manage your DevLogs.</p>
+        </div>
+        <form id="loginForm" class="login-form">
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" placeholder="Enter your username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" placeholder="Enter your password" required>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Sign In</button>
+            <div class="error-message" id="errorMessage" style="color: var(--jb-red); text-align: center; font-size: 0.9rem; display: none; margin-top: 10px;"></div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const errorMsg = document.getElementById('errorMessage');
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    localStorage.setItem('admin_token', data.token);
+                    window.location.href = '/admin.html';
+                } else {
+                    errorMsg.style.display = 'block';
+                    errorMsg.innerText = data.error || 'Login Failed. Please check your credentials.';
+                }
+            } catch (err) {
+                console.error('Error:', err);
+                errorMsg.innerText = 'Server Error. Check console.';
+                errorMsg.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

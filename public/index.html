@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DevLogs | Developer Log Entries</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="index.html" style="font-size: 1.5rem; margin-right: auto; background: linear-gradient(90deg, var(--gh-blue) 0%, var(--gh-green) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">DevLogs</a>
+            <a href="index.html">Home</a>
+            <a href="login.html" id="loginBtn">Login</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="section-container animate-fade-in">
+                <h1 class="animate-slide-up">Developer Logs</h1>
+                <p class="animate-slide-up animate-delay-1">A collection of technical insights, project updates, and coding journey entries.</p>
+                <div class="scroll-indicator">
+                    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--gh-text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 13l5 5 5-5M7 6l5 5 5-5"/></svg>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-section" id="posts-section">
+            <div class="section-container">
+                <div id="posts" class="grid">
+                    <!-- Posts will be injected here -->
+                    <div class="animate-fade-in" style="text-align: center; grid-column: 1 / -1;">
+                        <p>Loading entries...</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="section-container">
+            <p>&copy; 2026 DevLogs. Built for developers by developers.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Check if user is logged in
+        const token = localStorage.getItem('admin_token');
+        if (token) {
+            document.getElementById('loginBtn').textContent = 'Logout';
+            document.getElementById('loginBtn').href = '#';
+            document.getElementById('loginBtn').onclick = () => {
+                localStorage.removeItem('admin_token');
+                window.location.reload();
+            };
+        }
+
+        fetch('/api/posts')
+            .then(res => res.json())
+            .then(data => {
+                const postsContainer = document.getElementById('posts');
+                if (data.length === 0) {
+                    postsContainer.innerHTML = '<div style="text-align: center; grid-column: 1 / -1;"><p>No logs found yet. Stay tuned!</p></div>';
+                    return;
+                }
+                postsContainer.innerHTML = data.map((post, index) => `
+                    <article class="card animate-slide-up" style="animation-delay: ${index * 0.1}s">
+                        <h3>${post.title}</h3>
+                        <p>${post.content}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px;">
+                            <small style="color: var(--gh-text-secondary)">${new Date(post.created_at).toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}</small>
+                            <span style="color: var(--gh-blue); font-size: 0.8rem; font-weight: 600;">#devlog</span>
+                        </div>
+                    </article>
+                `).join('');
+            })
+            .catch(err => {
+                console.error('Error fetching posts:', err);
+                document.getElementById('posts').innerHTML = '<div style="text-align: center; grid-column: 1 / -1;"><p>Error loading logs. Please try again later.</p></div>';
+            });
+    </script>
+</body>
+</html>
