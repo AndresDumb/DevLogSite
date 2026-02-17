@@ -42,11 +42,15 @@ npm install
 ```
 
 ### 3. Database Configuration
-1. Create a MySQL database named `blog_db`.
-2. Create the required tables (Schema TODO):
+1. Create a MySQL database (e.g., named `blog_db`).
+2. Run the initialization script to create the required tables:
+   ```bash
+   npm run init-db
+   ```
+3. Alternatively, manually create the tables:
    - `users`: `id`, `username`, `password_hash`
    - `posts`: `id`, `title`, `content`, `created_at`
-3. Configure a database user (e.g., `blog_admin`) with appropriate permissions.
+4. Configure a database user with appropriate permissions.
 
 ### 4. Environment Variables
 Create a `.env` file in the root directory:
@@ -56,8 +60,10 @@ DB_HOST=localhost
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=blog_db
+DB_SSL=false
 JWT_SECRET=your_very_secure_secret_key
 ```
+Note: Set `DB_SSL=true` if your database provider (like Render or Aiven) requires SSL.
 
 ## Running the Application
 
@@ -99,9 +105,10 @@ npm start
 - `LICENSE`: Project license terms.
 
 ## Scripts
+- `npm start`: Starts the production server.
+- `npm run dev`: Starts the server in development mode using nodemon.
+- `npm run init-db`: Initializes the database schema.
 - `npm test`: Currently a placeholder (echoes error).
-- **TODO**: Add a `start` script to `package.json` (`node server.js`).
-- **TODO**: Add a `dev` script using `nodemon`.
 
 ## API Endpoints
 - `POST /api/login`: Authenticate user and receive a JWT.

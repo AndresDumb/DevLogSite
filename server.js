@@ -4,8 +4,12 @@
 const requiredEnv = ['DB_PASSWORD', 'JWT_SECRET'];
 requiredEnv.forEach(envVar => {
     if (!process.env[envVar]) {
-        console.error(`FATAL ERROR: ${envVar} is not defined in .env file.`);
-        process.exit(1);
+        if (process.env.NODE_ENV === 'production') {
+            console.error(`FATAL ERROR: ${envVar} is not defined.`);
+            process.exit(1);
+        } else {
+            console.warn(`WARNING: ${envVar} is not defined. This might cause issues.`);
+        }
     }
 });
 
