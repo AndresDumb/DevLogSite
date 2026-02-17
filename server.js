@@ -1,10 +1,24 @@
 ﻿require('dotenv').config();
+
+// Ensure required environment variables are set
+const requiredEnv = ['DB_PASSWORD', 'JWT_SECRET'];
+requiredEnv.forEach(envVar => {
+    if (!process.env[envVar]) {
+        console.error(`FATAL ERROR: ${envVar} is not defined in .env file.`);
+        process.exit(1);
+    }
+});
+
 const express = require('express');
+const helmet = require('helmet');
+const cors = require('cors');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
 const app = express();
+app.use(helmet());
+app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); // Serves HTML files
 
@@ -23,29 +37,53 @@ function authenticateToken(req, res, next) {
 }
 
 app.post('/api/login', async (req, res) => {
-    const { username, password } = req.body;
-    const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
-    if (users.length === 0) return res.status(400).send('User not found');
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).send('Username and password are required');
+        }
 
-    if (await bcrypt.compare(password, users[0].password_hash)) {
-        const token = jwt.sign({ name: username }, process.env.JWT_SECRET);
-        res.json({ token }); // Send the key to the frontend
-    } else {
-        res.status(403).send('Not Allowed');
+        const [users] = await db.query('SELECT * FROM users WHERE username = ?', [username]);
+        if (users.length === 0) return res.status(401).send('Invalid credentials');
+
+        const match = await bcrypt.compare(password, users[0].password_hash);
+        if (match) {
+            const token = jwt.sign({ name: username }, process.env.JWT_SECRET, { expiresIn: '1h' });
+            res.json({ token });
+        } else {
+            res.status(401).send('Invalid credentials');
+        }
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
     }
 });
 
 
 app.get('/api/posts', async (req, res) => {
-    const [rows] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
-    res.json(rows);
+    try {
+        const [rows] = await db.query('SELECT * FROM posts ORDER BY created_at DESC');
+        res.json(rows);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 });
 
 
 app.post('/api/posts', authenticateToken, async (req, res) => {
-    const { title, content } = req.body;
-    await db.query('INSERT INTO posts (title, content) VALUES (?, ?)', [title, content]);
-    res.sendStatus(201);
+    try {
+        const { title, content } = req.body;
+        if (!title || !content) {
+            return res.status(400).send('Title and content are required');
+        }
+        await db.query('INSERT INTO posts (title, content) VALUES (?, ?)', [title, content]);
+        res.sendStatus(201);
+    } catch (err) {
+        console.error(err);
+        res.sendStatus(500);
+    }
 });
 
-app.listen(3000, () => console.log('Server running on port 3000'));
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

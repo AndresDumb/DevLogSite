@@ -49,26 +49,46 @@ npm install
 3. Configure a database user (e.g., `blog_admin`) with appropriate permissions.
 
 ### 4. Environment Variables
-Create a `.env` file in the root directory (refer to `.env` for current development values):
+Create a `.env` file in the root directory:
 ```env
+PORT=3000
 DB_HOST=localhost
 DB_USER=your_db_user
 DB_PASSWORD=your_db_password
 DB_NAME=blog_db
-JWT_SECRET=your_secret_key
+JWT_SECRET=your_very_secure_secret_key
 ```
 
 ## Running the Application
 
-### Start the server
+### Development
 ```bash
-node server.js
+npm run dev
 ```
-The server will run on [http://localhost:3000](http://localhost:3000).
 
-- **Homepage**: [http://localhost:3000/index.html](http://localhost:3000/index.html)
-- **Login**: [http://localhost:3000/login.html](http://localhost:3000/login.html)
-- **Admin Panel**: [http://localhost:3000/admin.html](http://localhost:3000/admin.html)
+### Production
+```bash
+npm start
+```
+
+## Deployment Recommendations
+
+### 1. Platform-as-a-Service (PaaS) - e.g., Render, Heroku
+- **Database**: Use a managed MySQL service (e.g., Aiven, PlanetScale, or Render's Managed MySQL).
+- **Environment Variables**: Set `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`, and `JWT_SECRET` in the platform's dashboard.
+- **Auto-deployment**: Connect your GitHub repository for automatic builds.
+
+### 2. Virtual Private Server (VPS) - e.g., DigitalOcean, Linode
+- **Reverse Proxy**: Use **Nginx** or **Apache** as a reverse proxy to handle SSL (HTTPS) via Let's Encrypt.
+- **Process Manager**: Use **PM2** to keep the application running: `pm2 start server.js`.
+- **Security**: Ensure only ports 80 and 443 are open to the public; keep MySQL accessible only to `localhost`.
+
+### 3. Security Checklist
+- [ ] Use HTTPS (essential for JWT security).
+- [ ] Use a strong, unique `JWT_SECRET`.
+- [ ] Set `NODE_ENV=production` in your environment.
+- [ ] Regularly update dependencies (`npm audit`).
+- [ ] Use a firewall (e.g., UFW) on VPS.
 
 ## Project Structure
 - `server.js`: Main entry point and API routes.
