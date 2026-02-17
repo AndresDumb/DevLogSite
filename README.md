@@ -62,8 +62,10 @@ DB_PASSWORD=your_db_password
 DB_NAME=blog_db
 DB_SSL=false
 JWT_SECRET=your_very_secure_secret_key
+ADMIN_USERNAME=admin
+ADMIN_PASSWORD=your_admin_password
 ```
-Note: Set `DB_SSL=true` if your database provider (like Render or Aiven) requires SSL.
+Note: Set `DB_SSL=true` if your database provider (like Render or Aiven) requires SSL. `ADMIN_PASSWORD` is used by `npm run init-db` to create an initial user.
 
 ## Running the Application
 

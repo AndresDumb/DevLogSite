@@ -1,7 +1,7 @@
 ﻿require('dotenv').config();
 
 // Ensure required environment variables are set
-const requiredEnv = ['DB_PASSWORD', 'JWT_SECRET'];
+const requiredEnv = ['DB_PASSWORD', 'JWT_SECRET', 'ADMIN_PASSWORD'];
 requiredEnv.forEach(envVar => {
     if (!process.env[envVar]) {
         if (process.env.NODE_ENV === 'production') {
@@ -20,10 +20,29 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const db = require('./db');
 
+// Add error handler for the database pool
+// Note: db is a promise pool, we need to access the underlying pool for 'error' event
+db.pool.on('error', (err) => {
+    console.error('Unexpected error on idle database connection', err);
+});
+
 const app = express();
-app.use(helmet());
 app.use(cors());
 app.use(express.json());
+
+// Content Security Policy configuration for Helmet
+// This allows the inline scripts and styles used in the frontend while keeping security
+app.use(
+    helmet.contentSecurityPolicy({
+        directives: {
+            "default-src": ["'self'"],
+            "script-src": ["'self'", "'unsafe-inline'"],
+            "style-src": ["'self'", "'unsafe-inline'"],
+            "img-src": ["'self'", "data:"],
+        },
+    })
+);
+
 app.use(express.static('public')); // Serves HTML files
 
 
